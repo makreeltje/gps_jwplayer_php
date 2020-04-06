@@ -40,4 +40,11 @@ class AuthController extends Controller
 
         return response(['user' => auth()->user(), 'accessToken' => $accessToken]);
     }
+
+    public function testAuth(Request $request)
+    {
+        if (auth()->Check()) {
+            return 'This Authentication is Valid';
+        }
+    }
 }
