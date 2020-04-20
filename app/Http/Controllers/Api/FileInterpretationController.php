@@ -21,7 +21,7 @@ class FileInterpretationController extends Controller
         $implodedTranslatedVtt = '';
         foreach($translatedSplitVtt as $block)
         {
-            $implodedTranslatedVtt .= ($block["Timestamp"]);
+            $implodedTranslatedVtt .= ($block["Timestamp"] . "\n");
             $implodedTranslatedVtt .= ($block["Naam"] .= $block["Text"]);
             $implodedTranslatedVtt .= ("\n" . "\n");
         }
