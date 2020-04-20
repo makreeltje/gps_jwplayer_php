@@ -17,3 +17,7 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+Route::post('/Register', 'Api\AuthController@Register');
+Route::post('/Login', 'Api\AuthController@Login');
+Route::get('/TestAuth', 'Api\AuthController@TestAuth')->middleware('auth:api');
