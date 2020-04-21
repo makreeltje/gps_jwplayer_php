@@ -15,6 +15,7 @@ class FileInterpretationController extends Controller
       $validateData = $request->validate([
         'filePath' => 'required',
         'targetLanguage' => 'required',
+        'fileName' => 'required',
     ]); 
         $splitFile = $this->splitFile($validateData['filePath']);
         $translatedSplitVtt = $this->translateStrings($splitFile, $validateData['targetLanguage']);
@@ -25,6 +26,9 @@ class FileInterpretationController extends Controller
             $implodedTranslatedVtt .= ($block["Naam"] .= $block["Text"]);
             $implodedTranslatedVtt .= ("\n" . "\n");
         }
+        $fp = fopen($_SERVER['DOCUMENT_ROOT'] . "/" . $validateData['fileName'] . ".vtt","wb");
+        fwrite($fp, $implodedTranslatedVtt);
+        fclose($fp);
         return $implodedTranslatedVtt;
     }
     
