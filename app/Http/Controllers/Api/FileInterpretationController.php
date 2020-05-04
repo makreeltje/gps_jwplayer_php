@@ -65,8 +65,9 @@ class FileInterpretationController extends Controller
     public function translateStrings(array $splitFile, String $targetLanguage)
     {
         $splitVttResultTranslated = array();
+
         foreach ($splitFile as $splitBlockResult) {
-            $apiKey = 'AIzaSyDsuGQFqyB1948NB_ZyHt6w8W_ccX6AkBE';
+            $apiKey = env("API_KEY", "");;
             $text = $splitBlockResult["Text"];
             $url = 'https://www.googleapis.com/language/translate/v2?key=' . $apiKey . '&q=' . rawurlencode($text) . '&source=en&target=' . $targetLanguage;
             $handle = curl_init($url);
