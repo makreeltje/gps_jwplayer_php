@@ -34,7 +34,7 @@ class AuthController extends Controller
         ]);
 
         if (!Auth::attempt($loginData)) {
-            return response(['message' => 'Invalid Credentials']);
+            return Redirect::back()->withErrors(['errorMsg', 'Invalid Credentials']);
         }
 
         $accessToken = Auth::user()->createToken('authToken')->accessToken;
@@ -42,8 +42,9 @@ class AuthController extends Controller
         return response(['user' => Auth::user(), 'accessToken' => $accessToken]);
     }
 
-    public function Logout(Request $request){
-        Auth:Logout($request);
+    public function Logout(Request $request)
+    {
+        Auth::Logout($request);
     }
 
     public function testAuth(Request $request)
