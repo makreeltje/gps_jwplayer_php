@@ -45,7 +45,7 @@ class TranscriptionJob implements ShouldQueue
      *
      * @return void
      */
-    public function handle()
+    public function handle() 
     {
         $client = new SpeechClient();
         $audio = (new RecognitionAudio())
@@ -86,12 +86,12 @@ class TranscriptionJob implements ShouldQueue
                     $previousWord = $wordInfo;
                 }
                 var_dump($this->vttArray);
-                //printf('Transcript: %s' . PHP_EOL, $transcript);
-                //printf('Confidence: %s' . PHP_EOL, $confidence);
+                
             }
         } else {
             print_r($operation->getError());
         }
         $client->close();
+        //todo add to database
     }
 }
