@@ -55,7 +55,7 @@ class FileInterpretationController extends Controller
     }
     */
     
-    /*
+    
     public function splitStrings(String $textBlock)
     {
         $split[0] = trim(explode(("\n"), $textBlock)[0]); //timestamp
@@ -71,7 +71,7 @@ class FileInterpretationController extends Controller
         );
         return $splitBlockResult;
     }
-    */
+    
     
     public function translateStrings(array $splitFile, String $targetLanguage)
     {

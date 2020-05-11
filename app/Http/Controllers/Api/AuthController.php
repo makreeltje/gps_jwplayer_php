@@ -16,14 +16,10 @@ class AuthController extends Controller
             'email' => 'email|required|unique:users',
             'password' => 'required|confirmed'
         ]);
-
         $validatedData['password'] = bcrypt($validatedData['password']);
 
-        $user = User::create($validatedData);
-
-        $accessToken = $user->createToken('authToken')->accessToken;
-
-        return response(['user' => $user, 'accessToken' => $accessToken]);
+        $reponse = ($this->dispatch(new register($validatedData)));
+        return $response;
     }
 
     public function Login(Request $request)
@@ -33,13 +29,8 @@ class AuthController extends Controller
             'password' => 'required'
         ]);
 
-        if (!Auth::attempt($loginData)) {
-            return Redirect::back()->withErrors(['errorMsg', 'Invalid Credentials']);
-        }
-
-        $accessToken = Auth::user()->createToken('authToken')->accessToken;
-
-        return response(['user' => Auth::user(), 'accessToken' => $accessToken]);
+        $response = ($this->dispatch(new login($loginData)));
+        return $response;
     }
 
     public function Logout(Request $request){
@@ -49,13 +40,13 @@ class AuthController extends Controller
             $token->revoke();
         }
         Auth::Logout($request);
-
     }
 
     public function testAuth(Request $request)
     {
-        if (Auth::Check($request)) {
+        if (Auth::Check($request)) 
             return 'This Authentication is Valid';
-        }
+        else
+            return 'This Authentication is Invalid';
     }
 }
