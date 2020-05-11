@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
@@ -34,7 +34,7 @@ class AuthController extends Controller
         ]);
 
         if (!Auth::attempt($loginData)) {
-            return Redirect::back()->withErrors(['errorMsg', 'Invalid Credentials']);
+            return response(['message' => 'Invalid Credentials']);
         }
 
         $accessToken = Auth::user()->createToken('authToken')->accessToken;
@@ -42,15 +42,9 @@ class AuthController extends Controller
         return response(['user' => Auth::user(), 'accessToken' => $accessToken]);
     }
 
-    public function Logout(Request $request){
-        $user = auth()->guard('api')->user();
-
-        foreach ($user->tokens as $token) {
-            $token->revoke();
-        }
-        Auth::Logout($request);
-
-    }
+    public function logout(Request $request) {
+        Auth::logout($request);
+      }
 
     public function testAuth(Request $request)
     {
