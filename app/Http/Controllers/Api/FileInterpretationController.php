@@ -10,24 +10,40 @@ use Google\Cloud\Translate\V2\TranslateClient;
 
 class FileInterpretationController extends Controller
 {
-    public function splitFile(Request $request)
+    public function translateVtt(Request $request)
     {
-        $validateData = $request->validate([
-            'fileLocation' => 'required',
-            'targetLanguage' => 'required',
-        ]);
+      $validateData = $request->validate([
+        'filePath' => 'required',
+        'targetLanguage' => 'required',
+        'fileName' => 'required',
+    ]); 
+        $splitFile = $this->splitFile($validateData['filePath']);
+        $translatedSplitVtt = $this->translateStrings($splitFile, $validateData['targetLanguage']);
+        $implodedTranslatedVtt = '';
+        foreach($translatedSplitVtt as $block)
+        {
+            $implodedTranslatedVtt .= ($block["Timestamp"] . "\n");
+            $implodedTranslatedVtt .= ($block["Naam"] .= $block["Text"]);
+            $implodedTranslatedVtt .= ("\n" . "\n");
+        }
+        $fp = fopen($_SERVER['DOCUMENT_ROOT'] . "/" . $validateData['fileName'] . ".vtt","wb");
+        fwrite($fp, $implodedTranslatedVtt);
+        fclose($fp);
+        return $implodedTranslatedVtt;
+    }
+    
 
+    public function splitFile(String $filePath)
+    {
         $splitFile = array();
         $counter = 0;
-        $string = File::get(storage_path($validateData['fileLocation']));
+        $string = File::get(storage_path($filePath));
         $SplitTextBlock = explode((PHP_EOL . PHP_EOL), $string);  //split text into blocks
         foreach ($SplitTextBlock as $block) {
             $splitFile[$counter] = $this->splitStrings($block);    //split text blocks
             $counter++;
         }
-        //return $splitFile;
-        $result = $this->translateStrings($splitFile, $validateData['targetLanguage']);
-        return $result;
+        return $splitFile;
     }
 
     public function splitStrings(String $textBlock)
@@ -41,14 +57,14 @@ class FileInterpretationController extends Controller
             "Timestamp" => $split[0],
             "Naam" => $split[1],
             "Text" => $split[2],
-            //"EmptyLine" => " \n"
+            "EmptyLine" => "\n"
         );
         return $splitBlockResult;
     }
 
     public function translateStrings(array $splitFile, String $targetLanguage)
     {
-        $Onlytext = array();
+        $splitVttResultTranslated = array();
         foreach ($splitFile as $splitBlockResult) {
             $apiKey = 'AIzaSyDsuGQFqyB1948NB_ZyHt6w8W_ccX6AkBE';
             $text = $splitBlockResult["Text"];
@@ -58,8 +74,9 @@ class FileInterpretationController extends Controller
             $response = curl_exec($handle);                 
             $responseDecoded = json_decode($response, true);
             curl_close($handle);
-            array_push($Onlytext, $responseDecoded["data"]["translations"]);
+            $splitBlockResult["Text"] = $responseDecoded["data"]["translations"][0]["translatedText"];
+            array_push($splitVttResultTranslated, $splitBlockResult);
         }
-        return $Onlytext;
+        return $splitVttResultTranslated;
     }
 }
