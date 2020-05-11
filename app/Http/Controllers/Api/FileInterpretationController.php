@@ -16,9 +16,9 @@ class FileInterpretationController extends Controller
             'targetLanguage' => 'required',
             'fileName' => 'required',
         ]);
-        $splitFile = $this->splitFile($validateData['filePath']); //split the vtt file in associative array
+        $splitFile = $this->splitFile($validateData['filePath']); //split the vtt file in associative array //https://github.com/podlove/webvtt-parser
         $translatedSplitVtt = $this->translateStrings($splitFile['cues'], $validateData['targetLanguage']); 
-        $implodedTranslatedVtt = '';
+        $implodedTranslatedVtt = "WebVTT \n\n";
         foreach ($translatedSplitVtt as $block) {
             $implodedTranslatedVtt .= (gmdate("H:i:s", $block["start"]) . ' ' . '-->' . ' ');
             $implodedTranslatedVtt .= (gmdate("H:i:s", $block["end"]) . "\n");
@@ -89,6 +89,7 @@ class FileInterpretationController extends Controller
             $splitBlockResult["text"] = $responseDecoded["data"]["translations"][0]["translatedText"];
             array_push($splitVttResultTranslated, $splitBlockResult);
         }
+        dd($splitVttResultTranslated);
         return $splitVttResultTranslated;
     }
 }
