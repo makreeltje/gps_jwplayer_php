@@ -32,9 +32,9 @@ class SplitFile extends Command
      *
      * @return void
      */
-    public function __construct(Request $request) 
+    public function __construct(string $FilePath) 
     {
-        $this->filePath = $request['filePath'];
+        $this->filePath = $FilePath;
         parent::__construct();
      }
 

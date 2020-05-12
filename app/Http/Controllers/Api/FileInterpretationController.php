@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Collection;
 use App\CommandVariables;
 use App\Console\Commands\SplitFile;
+use App\Console\Commands\TranslateStrings;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Podlove\Webvtt\Parser;
@@ -18,8 +20,12 @@ class FileInterpretationController extends Controller
             'targetLanguage' => 'required',
             'fileName' => 'required',
         ]);
-        $splitFile = $this->splitFile($request); //split the vtt file in associative array //https://github.com/podlove/webvtt-parser
-        $translatedSplitVtt = $this->translateStrings($splitFile['cues'], $validateData['targetLanguage']); 
+        $splitFile = $this->splitFile($validateData['filePath']); //split the vtt file in associative array //https://github.com/podlove/webvtt-parser
+        $data = array(
+        'splitFile' => $splitFile,
+        'targetLanguage' => $validateData['targetLanguage']
+        );
+        $translatedSplitVtt = $this->translateStrings($data); //translate string in api logic
         $implodedTranslatedVtt = "WebVTT \n\n";
         foreach ($translatedSplitVtt as $block) {
             $implodedTranslatedVtt .= (gmdate("H:i:s", $block["start"]) . ' ' . '-->' . ' ');
@@ -34,28 +40,13 @@ class FileInterpretationController extends Controller
         return $implodedTranslatedVtt;
     }
 
-    public function splitFile($request)
+    public function splitFile(string $filePath)
     {
-        $result = ($this->dispatch(new SplitFile($request)));
-        return $result;
+        return ($this->dispatch(new SplitFile($filePath)));
     }
     
-    public function translateStrings(array $splitFile, String $targetLanguage)
+    public function translateStrings(array $array)
     {
-        $splitVttResultTranslated = array();
-
-        foreach ($splitFile as $splitBlockResult) {
-            $apiKey = env("API_KEY", "");
-            $text = $splitBlockResult["text"];
-            $url = 'https://www.googleapis.com/language/translate/v2?key=' . $apiKey . '&q=' . rawurlencode($text) . '&source=en&target=' . $targetLanguage;
-            $handle = curl_init($url);
-            curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
-            $response = curl_exec($handle);
-            $responseDecoded = json_decode($response, true);
-            curl_close($handle);
-            $splitBlockResult["text"] = $responseDecoded["data"]["translations"][0]["translatedText"];
-            array_push($splitVttResultTranslated, $splitBlockResult);
-        }
-        return $splitVttResultTranslated;
+        return ($this->dispatch(new TranslateStrings($array)));
     }
 }
