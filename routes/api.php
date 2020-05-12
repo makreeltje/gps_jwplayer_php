@@ -34,18 +34,13 @@ Route::get('/TestAuth', 'Api\AuthController@TestAuth')->middleware('auth:api');
 | Transcription
 |--------------------------------------------------------------------------
 */
-<<<<<<< Updated upstream
-Route::get('/Transcription','Api\TranscriptionController@TranscribeAudio');
-=======
-Route::post('/Transcription','TranscriptionController@TranscribeAudio');
->>>>>>> Stashed changes
+Route::post('/Transcription','Api\TranscriptionController@TranscribeAudio');
 
 
 
 /*
 |--------------------------------------------------------------------------
-| 
-| <ControllerName>
+| SECTION
 |--------------------------------------------------------------------------
 */
 

@@ -8,7 +8,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 
-require_once __DIR__ . '/vendor/autoload.php';
+require_once __DIR__ . '../../../vendor/autoload.php';
 
 use Google\Cloud\Speech\V1\SpeechClient;
 use Google\Cloud\Speech\V1\RecognitionAudio;
@@ -25,19 +25,15 @@ class TranscriptionJob implements ShouldQueue
      *
      * @return void
      */
-    private $vttArray = ["cues"=>[]];
+    private $vttArray = ["cues" => []];
     private $audioFile = null;
     private $config = null;
-
+    private $audioFilePath = "";
+    private $languageCode = "";
     public function __construct($audioFilePath, $languageCode)
     {
-        $this->audioFile = file_get_contents($audioFilePath);
-        $this->config = (new RecognitionConfig())
-            ->setEncoding(AudioEncoding::ENCODING_UNSPECIFIED)
-            ->setSampleRateHertz(32000)
-            ->setLanguageCode($languageCode)
-            ->setEnableWordTimeOffsets(true)
-            ->setEnableAutomaticPunctuation(true);
+        $this->audioFilePath = $audioFilePath;
+        $this->languageCode = $languageCode;
     }
 
     /**
@@ -45,8 +41,16 @@ class TranscriptionJob implements ShouldQueue
      *
      * @return void
      */
-    public function handle() 
+    public function handle()
     {
+        $this->audioFile = file_get_contents($this->audioFilePath);
+        $this->config = (new RecognitionConfig())
+            ->setEncoding(AudioEncoding::ENCODING_UNSPECIFIED)
+            ->setSampleRateHertz(32000)
+            ->setLanguageCode($this->languageCode)
+            ->setEnableWordTimeOffsets(true)
+            ->setEnableAutomaticPunctuation(true);
+            
         $client = new SpeechClient();
         $audio = (new RecognitionAudio())
             ->setContent($this->audioFile);
@@ -54,14 +58,14 @@ class TranscriptionJob implements ShouldQueue
         $operation = $client->longRunningRecognize($this->config, $audio);
         print("Transcription started");
         $operation->pollUntilComplete();
-        $cueTemplate = ["voice"=>"", "start"=>0, "end"=>0, "text" =>"", "identifier"=>""];
+        $cueTemplate = ["voice" => "", "start" => 0, "end" => 0, "text" => "", "identifier" => ""];
         if ($operation->operationSucceeded()) {
             $response = $operation->getResult();
 
             // each result is for a consecutive portion of the audio. iterate
             // through them to get the transcripts for the entire audio file.
             foreach ($response->getResults() as $result) {
-                
+
                 $alternatives = $result->getAlternatives();
                 $mostLikely = $alternatives[0];
                 $transcript = $mostLikely->getTranscript();
@@ -86,7 +90,6 @@ class TranscriptionJob implements ShouldQueue
                     $previousWord = $wordInfo;
                 }
                 var_dump($this->vttArray);
-                
             }
         } else {
             print_r($operation->getError());
