@@ -16,5 +16,6 @@ class vttConstructor extends Controller
             $implodedVtt .= ($block["text"]);
             $implodedVtt .= ("\n" . "\n");
         }
+        return $implodedVtt;
     }
 }
