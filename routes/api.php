@@ -14,8 +14,8 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::Post('/TranslateFile', 'FileInterpretationController@TranslateFile');
-Route::get('/test', 'FileInterpretationController@splitFile');
+Route::post('/TranslateFile', 'FileInterpretationController@translateVtt');
+Route::post('/test', 'FileInterpretationController@splitFile');
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
@@ -23,3 +23,4 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 Route::post('/Register', 'Api\AuthController@Register');
 Route::post('/Login', 'Api\AuthController@Login');
 Route::get('/TestAuth', 'Api\AuthController@TestAuth')->middleware('auth:api');
+Route::get('/Logout', 'Api\AuthController@Logout');
