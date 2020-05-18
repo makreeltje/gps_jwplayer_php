@@ -15,12 +15,33 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::post('/TranslateFile', 'FileInterpretationController@translateVtt');
-Route::post('/test', 'FileInterpretationController@splitFile');
+Route::get('/test', 'FileInterpretationController@splitFile');
+/*
+|--------------------------------------------------------------------------
+| AUTHENTICATION
+|--------------------------------------------------------------------------
+*/
+
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
-
 Route::post('/Register', 'Api\AuthController@Register');
 Route::post('/Login', 'Api\AuthController@Login');
 Route::get('/TestAuth', 'Api\AuthController@TestAuth')->middleware('auth:api');
-Route::get('/Logout', 'Api\AuthController@Logout');
+
+/*
+|--------------------------------------------------------------------------
+| Transcription
+|--------------------------------------------------------------------------
+*/
+Route::post('/Transcription','Api\TranscriptionController@TranscribeAudio');
+
+
+
+/*
+|--------------------------------------------------------------------------
+| SECTION
+|--------------------------------------------------------------------------
+*/
+
+
