@@ -46,10 +46,7 @@ class FileInterpretationController extends Controller
 
         foreach ($splitFile["cues"] as $splitBlockResult) 
         {
-            $apiKey = env("API_KEY", "");
-            //dd($splitBlockResult);
-            $text = $splitBlockResult["text"];
-            $url = 'https://www.googleapis.com/language/translate/v2?key=' . $apiKey . '&q=' . rawurlencode($text) . '&source=en&target=' . $targetLanguage;
+            $url = 'https://www.googleapis.com/language/translate/v2?key=' . env("API_KEY", "") . '&q=' . rawurlencode($splitBlockResult["text"]) . '&source=en&target=' . $targetLanguage;
             $handle = curl_init($url);
             curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
             $response = curl_exec($handle);
