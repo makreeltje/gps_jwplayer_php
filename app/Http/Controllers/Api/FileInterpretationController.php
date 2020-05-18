@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Podlove\Webvtt\Parser;
+use app\http\controllers\vttConstructor;
 
 class FileInterpretationController extends Controller
 {
@@ -18,14 +19,7 @@ class FileInterpretationController extends Controller
         ]);
         $splitFile = $this->splitFile($validateData['filePath']); //split the vtt file in associative array //https://github.com/podlove/webvtt-parser
         $translatedSplitVtt = $this->translateStrings($splitFile, $validateData['targetLanguage']); //translate string in api logic
-        $implodedTranslatedVtt = "WebVTT \n\n";
-        foreach ($translatedSplitVtt as $block) {
-            $implodedTranslatedVtt .= (gmdate("H:i:s", $block["start"]) . ' ' . '-->' . ' ');
-            $implodedTranslatedVtt .= (gmdate("H:i:s", $block["end"]) . "\n");
-            $implodedTranslatedVtt .= ('<v ' . $block["voice"] . '>');
-            $implodedTranslatedVtt .= ($block["text"]);
-            $implodedTranslatedVtt .= ("\n" . "\n");
-        }
+        $implodedTranslatedVtt = app('App\Http\Controllers\vttConstructor')->constructVtt($translatedSplitVtt);
         $fp = fopen($_SERVER['DOCUMENT_ROOT'] . "/" . $validateData['fileName'] . ".vtt", "wb");
         fwrite($fp, $implodedTranslatedVtt);
         fclose($fp);
