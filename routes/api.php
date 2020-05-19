@@ -42,7 +42,7 @@ Route::get('/Logout', 'Api\AuthController@Logout');
 */
 Route::post('/Transcription','Api\TranscriptionController@TranscribeAudio');
 
-
+Route::post('/UploadCaption', 'Api\VttController@UploadCaption');
 
 /*
 |--------------------------------------------------------------------------
