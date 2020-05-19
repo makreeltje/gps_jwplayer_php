@@ -7,6 +7,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use App\Classes\vttConstructor;
 
 require_once __DIR__ . '../../../vendor/autoload.php';
 
@@ -25,15 +26,19 @@ class TranscriptionJob implements ShouldQueue
      *
      * @return void
      */
-    private $vttArray = ["cues" => []];
+    private $vttArray = [];
     private $audioFile = null;
     private $config = null;
     private $audioFilePath = "";
     private $languageCode = "";
-    public function __construct($audioFilePath, $languageCode)
+    private $fileModel;
+    private $targetFilePath;
+    public function __construct($audioFilePath, $languageCode,$fileModel=null,$targetFilePath=null)
     {
         $this->audioFilePath = $audioFilePath;
         $this->languageCode = $languageCode;
+        $this->fileModel = $fileModel;
+        $this->targetFilePath = $targetFilePath;
     }
 
     /**
@@ -76,25 +81,38 @@ class TranscriptionJob implements ShouldQueue
 
 
                     if ($previousWord == null) {
-
-                        $cue["start"] = $wordInfo->getStartTime()->getSeconds();
+                        //$cue
+                        $cue["start"] = $this->ParseTime($wordInfo);
                     } else if (substr($previousWord->getWord(), -1) == ".") {
                         //close previous cue
-                        $cue["end"] = $previousWord->getEndTime()->getSeconds();
-                        array_push($this->vttArray["cues"], $cue);
+                        $cue["end"] = $this->ParseTime($wordInfo);
+                        array_push($this->vttArray, $cue);
+
                         //start new cue
                         $cue = $cueTemplate;
-                        $cue["start"] = $wordInfo->getStartTime()->getSeconds();
+                        $cue["start"] = $this->ParseTime($wordInfo);
                     }
                     $cue["text"] .= $wordInfo->getWord() . " ";
                     $previousWord = $wordInfo;
                 }
                 var_dump($this->vttArray);
+                $vttString = vttConstructor::constructVtt($this->vttArray);
+                if($this->targetFilePath != null){
+
+                }
+                var_dump($vttString);
             }
         } else {
             print_r($operation->getError());
         }
         $client->close();
         //todo add to database
+       
+    }
+    private function ParseTime($wordInfo){
+        $jsonTime = $wordInfo->getStartTime()->serializeToJsonString();
+        $jsonTime =str_replace("\"","",$jsonTime);
+        $time = floatval($jsonTime);
+        return $time;
     }
 }
