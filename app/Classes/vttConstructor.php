@@ -7,7 +7,7 @@ class vttConstructor
 {
     public static function constructVtt(Array $cues, String $kind, String $language)
     {
-        $implodedVtt = "WEBVTT Kind: {$kind}; Language: {$language } \n\n";
+        $implodedVtt = "WEBVTT Kind: {$kind}; Language: {$language} \n\n";
         foreach ($cues as $block)                
         {
             $startTime = (float)$block["start"];
