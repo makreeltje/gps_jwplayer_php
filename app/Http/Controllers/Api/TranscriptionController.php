@@ -11,23 +11,22 @@ class TranscriptionController extends Controller
 {
     public function TranscribeAudio(Request $request){
         $validatedData = $request->validate([
-            "filePath"=>'required',
-            "languageCode"=>'required',
-            "targetFilePath"=>'nullable'
+            'filePath'=>'required',
+            'languageCode'=>'required',
+            'videoKey'=>'required',
+            'label'=>'required'
         ]);
-        $audioFile = $request->input('filePath');
-        $languageCode = $request->input('languageCode');
-        if($request->input('targetFilePath')==null){
-
-            $fileModel= File::create();
-            TranscriptionJob::dispatchAfterResponse($audioFile,$languageCode,$fileModel);
-            return response()->json(["fileId"=>$fileModel->fileId]);
-        }
-        else{
-            TranscriptionJob::dispatchAfterResponse($audioFile,$languageCode,$request->input('targetFilePath'));
-            return response()->json("Job Started");
-        }
         
+        $audioFile = $validatedData['filePath'];
+        $languageCode = $validatedData['languageCode'];
+        $videoKey = $validatedData['videoKey'];
+        $kind = 'captions';
+        $label = $validatedData['label'];
+        
+        TranscriptionJob::dispatchAfterResponse($audioFile,$languageCode,$videoKey,$kind,$label);
+        return response("Transcription Started");
+        
+       
     }
 
 }

@@ -31,14 +31,18 @@ class TranscriptionJob implements ShouldQueue
     private $config = null;
     private $audioFilePath = "";
     private $languageCode = "";
-    private $fileModel;
-    private $targetFilePath;
-    public function __construct($audioFilePath, $languageCode,$fileModel=null,$targetFilePath=null)
+    private $videoKey;
+    private $kind;
+    private $label;
+
+    public function __construct($audioFilePath, $languageCode,$videoKey,$kind,$label)
     {
         $this->audioFilePath = $audioFilePath;
         $this->languageCode = $languageCode;
-        $this->fileModel = $fileModel;
-        $this->targetFilePath = $targetFilePath;
+        $this->videoKey = $videoKey;
+        $this->kind = $kind;
+        $this->label = $label;
+       
     }
 
     /**
@@ -51,17 +55,18 @@ class TranscriptionJob implements ShouldQueue
         $this->audioFile = file_get_contents($this->audioFilePath);
         $this->config = (new RecognitionConfig())
             ->setEncoding(AudioEncoding::ENCODING_UNSPECIFIED)
-            ->setSampleRateHertz(32000)
+            ->setSampleRateHertz(44100)
             ->setLanguageCode($this->languageCode)
             ->setEnableWordTimeOffsets(true)
             ->setEnableAutomaticPunctuation(true);
             
-        $client = new SpeechClient();
+        $client = new SpeechClient([
+            'keyFilePath' => base_path().'/JWPlayer-565edd548e20.json'
+        ]);
         $audio = (new RecognitionAudio())
             ->setContent($this->audioFile);
 
         $operation = $client->longRunningRecognize($this->config, $audio);
-        print("Transcription started");
         $operation->pollUntilComplete();
         $cueTemplate = ["voice" => "", "start" => 0, "end" => 0, "text" => "", "identifier" => ""];
         if ($operation->operationSucceeded()) {
@@ -95,13 +100,12 @@ class TranscriptionJob implements ShouldQueue
                     $cue["text"] .= $wordInfo->getWord() . " ";
                     $previousWord = $wordInfo;
                 }
-                var_dump($this->vttArray);
-                $vttString = vttConstructor::constructVtt($this->vttArray);
-                if($this->targetFilePath != null){
-
-                }
-                var_dump($vttString);
             }
+            #var_dump($this->vttArray);
+            $vttString = vttConstructor::constructVtt($this->vttArray);
+            
+            vttConstructor::uploadVtt($vttString,$this->videoKey,$this->kind,$this->label);
+            #var_dump($vttString);
         } else {
             print_r($operation->getError());
         }
