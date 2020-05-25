@@ -32,6 +32,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 });
 Route::post('/Register', 'Api\AuthController@Register');
 Route::post('/Login', 'Api\AuthController@Login');
+Route::get('/checkAuthorization', 'Api\AuthController@checkAuthorization')->middleware('auth:api');
 Route::get('/TestAuth', 'Api\AuthController@TestAuth')->middleware('auth:api');
 Route::get('/Logout', 'Api\AuthController@Logout');
 
@@ -43,6 +44,8 @@ Route::get('/Logout', 'Api\AuthController@Logout');
 Route::post('/Transcription','Api\TranscriptionController@TranscribeAudio');
 
 Route::post('/UploadCaption', 'Api\VttController@UploadCaption');
+Route::get('/GetCaption', 'Api\VttController@GetCaption');
+Route::post('/SaveCaption', 'Api\VttController@SaveCaption');
 
 /*
 |--------------------------------------------------------------------------

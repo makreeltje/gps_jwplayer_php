@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Http;
 use Jwplayer\JwplatformAPI;
 use Illuminate\Support\Facades\File;
 use App\Classes\vttConstructor;
+use Podlove\Webvtt\Parser;
+
 
 
 class VttController extends Controller
@@ -35,7 +37,7 @@ class VttController extends Controller
                 ];
         $url = "app/tempfiles/" . $id . ".vtt";
         $decoded = json_decode(trim(json_encode($jwplatform_api->call('/videos/tracks/create', $params))), TRUE);
-        $upload_link = $decoded['link'];
+        $upload_link = $decoded ['link'];
         $upload_response = $jwplatform_api->upload(storage_path($url), $upload_link);
         unlink(storage_path($url));
         return response(['message' => $upload_response["status"]], 200);
@@ -43,10 +45,31 @@ class VttController extends Controller
 
     public function GetCaption(Request $request)
     {
+        $validateData = $request->validate([
+            'VttLink' => 'required',
+        ]);
+        $content = Http::get($validateData['VttLink']);
+        $parser = new Parser();
+        $content .= "\n";
+        $result = $parser->parse($content);
+
+        return $result != null ? response(['VttData' => $result], 200) : response(['error' => 'Internal server error'], 500);
     }
+    
 
     public function SaveCaption(Request $request)
     {
+        $validateData = $request->validate([
+            'VttLink' => 'required',
+        ]);
+
+        //Vanaf de laatse '/'
+        //tot het einde -> als .vtt bestaat tot aan .vtt
+        
+        $explodedLink = explode("/", $validateData['VttLink']);
+        $trackKey = str_replace(".vtt", "", $explodedLink[count($explodedLink) - 1]);
+        return $trackKey;
+
     }
 
     public function DeleteCaption(Request $request)

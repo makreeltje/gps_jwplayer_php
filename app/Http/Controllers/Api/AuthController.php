@@ -52,6 +52,11 @@ class AuthController extends Controller
 
     }
 
+    public function checkAuthorization(Request $request)
+    {
+        return Auth::check() ? response(['succes' => true], 200) : response(['succes' => false], 401);
+    }
+
     public function testAuth(Request $request)
     {
         if (Auth::Check($request)) {
