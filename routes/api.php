@@ -46,6 +46,7 @@ Route::post('/Transcription','Api\TranscriptionController@TranscribeAudio');
 Route::post('/UploadCaption', 'Api\VttController@UploadCaption');
 Route::get('/GetCaption', 'Api\VttController@GetCaption');
 Route::post('/SaveCaption', 'Api\VttController@SaveCaption');
+Route::delete('/DeleteCaption', 'Api\VttController@DeleteCaption');
 
 /*
 |--------------------------------------------------------------------------

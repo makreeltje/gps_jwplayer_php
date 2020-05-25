@@ -24,9 +24,7 @@ class TranscriptionController extends Controller
         $label = $validatedData['label'];
         
         TranscriptionJob::dispatchAfterResponse($audioFile,$languageCode,$videoKey,$kind,$label);
-        return response("Transcription Started");
-        
-       
+        return response("Transcription Started"); 
     }
 
 }

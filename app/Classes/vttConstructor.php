@@ -5,9 +5,9 @@ use DateTime;
 use Jwplayer\JwplatformAPI;
 class vttConstructor 
 {
-    public static function constructVtt(Array $cues)
+    public static function constructVtt(Array $cues, String $kind, String $language)
     {
-        $implodedVtt = "WEBVTT \n\n";
+        $implodedVtt = "WEBVTT Kind: {$kind}; Language: {$language } \n\n";
         foreach ($cues as $block)                
         {
             $startTime = (float)$block["start"];
@@ -24,6 +24,9 @@ class vttConstructor
         }
         return $implodedVtt;
     }
+    
+    //Todo: MOVE DEZE SHIT NAAR DE JUISTE CLASS
+    
     public static function uploadVtt($completeVttString,$videoKey,$kind,$label){
         $id =  str_replace(".", "", uniqid( "", true));
         $fp = fopen(storage_path( "app/tempfiles/" . $id . ".vtt"), "wb");
