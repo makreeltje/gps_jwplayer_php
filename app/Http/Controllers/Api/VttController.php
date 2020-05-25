@@ -61,14 +61,28 @@ class VttController extends Controller
     {
         $validateData = $request->validate([
             'VttLink' => 'required',
+            'VttData' => 'required',
+            'label' => 'required',
         ]);
-
-        //Vanaf de laatse '/'
-        //tot het einde -> als .vtt bestaat tot aan .vtt
-        
         $explodedLink = explode("/", $validateData['VttLink']);
-        $trackKey = str_replace(".vtt", "", $explodedLink[count($explodedLink) - 1]);
-        return $trackKey;
+        $trackKey = str_replace(".tmp", "",str_replace(".vtt", "", $explodedLink[count($explodedLink) - 1]));
+        $completeVttString = vttConstructor::constructVtt($validateData['VttData']);
+        $id =  str_replace(".", "", uniqid( "", true));
+        $fp = fopen(storage_path( "app/tempfiles/" . $id . ".vtt"), "wb");
+        fwrite($fp, $completeVttString);
+        fclose($fp);
+        $jwplatform_api = new JwplatformAPI(env("JWPLAYER_API_KEY", ""), env("JWPLAYER_API_SECRET", ""));
+        $params = [
+                    'track_key' => $trackKey,
+                    'label' => $validateData['label'],
+                    'update_file' => 'true',
+                ];
+        $url = "app/tempfiles/" . $id . ".vtt";
+        $decoded = json_decode(trim(json_encode($jwplatform_api->call('/videos/tracks/update', $params))), TRUE);
+        $upload_link = $decoded ['link'];
+        $upload_response = $jwplatform_api->upload(storage_path($url), $upload_link);
+        unlink(storage_path($url));
+        return response(['message' => $upload_response["status"]], 200);
 
     }
 
