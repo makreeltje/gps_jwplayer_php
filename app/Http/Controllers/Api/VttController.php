@@ -77,6 +77,7 @@ class VttController extends Controller
             'track_key' => $trackKey,
             'label' => $validateData['label'],
             'update_file' => 'true',
+            'status' => 'ready'
         ];
         $url = "app/tempfiles/" . $id . ".vtt";
         $decoded = json_decode(trim(json_encode($jwplatform_api->call('/videos/tracks/update', $params))), TRUE);
