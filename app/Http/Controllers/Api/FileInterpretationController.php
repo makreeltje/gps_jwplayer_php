@@ -13,12 +13,12 @@ class FileInterpretationController extends Controller
     public function translateVtt(Request $request)
     {
         $validateData = $request->validate([
-            'filePath' => 'required',
+            'VttData' => 'required',
             'targetLanguage' => 'required',
             'fileName' => 'required',
             'kind' => 'required'
         ]);
-        $splitFile = $this->splitFile($validateData['filePath']); //split the vtt file in associative array //https://github.com/podlove/webvtt-parser
+        $splitFile = $validateData['VttData']; //split the vtt file in associative array //https://github.com/podlove/webvtt-parser
         $translatedSplitVtt = $this->translateStrings($splitFile, $validateData['targetLanguage']); //translate string in api logic
         $implodedTranslatedVtt = vttConstructor::constructVtt($translatedSplitVtt, $validateData['kind'],$validateData['targetLanguage']);
         $fp = fopen($_SERVER['DOCUMENT_ROOT'] . "/" . $validateData['fileName'] . ".vtt", "wb");
@@ -27,13 +27,13 @@ class FileInterpretationController extends Controller
         return $implodedTranslatedVtt;
     }
 
-    public function splitFile(String $filePath)
-    {
-        $parser = new Parser();
-        $content = File::get(storage_path($filePath));
-        $result = $parser->parse($content);
-        return $result;
-    }    
+    // public function splitFile(String $filePath)
+    // {
+    //     $parser = new Parser();
+    //     $content = File::get(storage_path($filePath));
+    //     $result = $parser->parse($content);
+    //     return $result;
+    // }    
     
     public function translateStrings($splitFile, $targetLanguage)
     {

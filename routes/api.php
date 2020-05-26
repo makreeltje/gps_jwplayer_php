@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 Route::post('/TranslateFile', 'FileInterpretationController@translateVtt');
-Route::get('/test', 'FileInterpretationController@splitFile');
+//Route::get('/test', 'FileInterpretationController@splitFile');
 
 /*
 |--------------------------------------------------------------------------
@@ -47,6 +47,8 @@ Route::post('/UploadCaption', 'Api\VttController@UploadCaption');
 Route::get('/GetCaption', 'Api\VttController@GetCaption');
 Route::post('/SaveCaption', 'Api\VttController@SaveCaption');
 Route::delete('/DeleteCaption', 'Api\VttController@DeleteCaption');
+
+Route::post('/test', 'Api\VttController@test');
 
 /*
 |--------------------------------------------------------------------------

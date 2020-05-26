@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Http;
 use Jwplayer\JwplatformAPI;
 use App\Classes\vttConstructor;
 use Podlove\Webvtt\Parser;
+use Illuminate\Support\Facades\File;
 
 
 
@@ -108,6 +109,15 @@ class VttController extends Controller
         else if(array_key_exists('message', $decoded)){
             return response(['message' => $decoded['message']], 500);
         }
-        
     }
+
+    // public function test(Request $request)
+    // {
+        
+    //     $parser = new Parser();
+    //     $content = File::get(storage_path('/app/Files/JW.vtt'));
+    //     $result = $parser->parse($content);
+    //     $completeVttString = vttConstructor::constructVtt($result['cues'], 'captions', 'en');
+    //     dd($completeVttString);
+    // }
 }
