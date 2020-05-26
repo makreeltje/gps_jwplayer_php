@@ -16,10 +16,11 @@ class FileInterpretationController extends Controller
             'VttData' => 'required',
             'targetLanguage' => 'required',
             'fileName' => 'required',
-            'kind' => 'required'
+            'kind' => 'required',
+            'sourceLanguage' => 'required',
         ]);
         $splitFile = $validateData['VttData']; //split the vtt file in associative array //https://github.com/podlove/webvtt-parser
-        $translatedSplitVtt = $this->translateStrings($splitFile, $validateData['targetLanguage']); //translate string in api logic
+        $translatedSplitVtt = $this->translateStrings($splitFile, $validateData['targetLanguage'], $validateData['sourceLanguage']); //translate string in api logic
         $implodedTranslatedVtt = vttConstructor::constructVtt($translatedSplitVtt, $validateData['kind'],$validateData['targetLanguage']);
         $fp = fopen($_SERVER['DOCUMENT_ROOT'] . "/" . $validateData['fileName'] . ".vtt", "wb");
         fwrite($fp, $implodedTranslatedVtt);
@@ -35,7 +36,7 @@ class FileInterpretationController extends Controller
     //     return $result;
     // }    
     
-    public function translateStrings($splitFile, $targetLanguage)
+    public function translateStrings($splitFile, $targetLanguage, $sourceLanguage)
     {
         $splitVttResultTranslated = array();
 
