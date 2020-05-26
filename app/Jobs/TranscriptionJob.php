@@ -8,6 +8,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use App\Classes\vttConstructor;
+use Google\ApiCore\ApiException;
 
 require_once __DIR__ . '../../../vendor/autoload.php';
 
@@ -66,9 +67,14 @@ class TranscriptionJob implements ShouldQueue
         ]);
         $audio = (new RecognitionAudio())
             ->setContent($this->audioFile);
-
-        $operation = $client->longRunningRecognize($this->config, $audio);
-        $operation->pollUntilComplete();
+        try{
+            $operation = $client->longRunningRecognize($this->config, $audio);
+            $operation->pollUntilComplete();
+        }catch(ApiException $e){
+            response("file to large",419);
+            return;
+        }
+        
         $cueTemplate = ["voice" => "", "start" => 0, "end" => 0, "text" => "", "identifier" => ""];
         if ($operation->operationSucceeded()) {
             $response = $operation->getResult();
@@ -103,7 +109,7 @@ class TranscriptionJob implements ShouldQueue
                 }
             }
             #var_dump($this->vttArray);
-            $vttString = vttConstructor::constructVtt($this->vttArray);
+            $vttString = vttConstructor::constructVtt($this->vttArray,$this->kind,$this->languageCode);
             
             vttConstructor::uploadVtt($vttString,$this->videoKey,$this->kind,$this->label);
             unlink($localFile);
@@ -119,7 +125,7 @@ class TranscriptionJob implements ShouldQueue
         $id =  str_replace(".", "", uniqid( "", true));
         $path = storage_path( "app/tempfiles/");
         if(copy($sourceFilePath,$path . $id . ".m4a")){
-            $command ="ffmpeg -i \"" . $path . $id. ".m4a\" -acodec libmp3lame -aq 2 \"".$path . $id. ".mp3\"";
+            $command ="ffmpeg -i \"" . $path . $id. ".m4a\" -acodec libmp3lame -q:a 4 \"".$path . $id. ".mp3\"";
             exec($command);
         }
         unlink($path.$id.".m4a");
