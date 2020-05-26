@@ -67,13 +67,10 @@ class TranscriptionJob implements ShouldQueue
         ]);
         $audio = (new RecognitionAudio())
             ->setContent($this->audioFile);
-        try{
-            $operation = $client->longRunningRecognize($this->config, $audio);
-            $operation->pollUntilComplete();
-        }catch(ApiException $e){
-            response("file to large",419);
-            return;
-        }
+        
+        $operation = $client->longRunningRecognize($this->config, $audio);
+        $operation->pollUntilComplete();
+        
         
         $cueTemplate = ["voice" => "", "start" => 0, "end" => 0, "text" => "", "identifier" => ""];
         if ($operation->operationSucceeded()) {
