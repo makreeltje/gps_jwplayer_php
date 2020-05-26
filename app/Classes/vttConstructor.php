@@ -36,7 +36,8 @@ class vttConstructor
         $params = [
                     'video_key' => $videoKey,
                     'kind' => $kind,
-                    'label' => $label
+                    'label' => $label,
+                    'status' => 'ready'
                 ];
         $url = "app/tempfiles/" . $id . ".vtt";
         $decoded = json_decode(trim(json_encode($jwplatform_api->call('/videos/tracks/create', $params))), TRUE);
