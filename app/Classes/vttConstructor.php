@@ -18,8 +18,8 @@ class vttConstructor
 
             $implodedVtt .= (sprintf('%02d:%02d:%02d', ($startTime/3600),($startTime/60%60), $startTime%60) . $startMilSec . ' ' . '-->' . ' ');
             $implodedVtt .= (sprintf('%02d:%02d:%02d', ($endTime/3600),($endTime/60%60), $endTime%60) . $endMilSec . "\n");
-            $implodedVtt .= ('<v ' . $block["voice"] . '>');
-            $implodedVtt .= ($block["text"]);
+            if($block["voice"]) $implodedVtt .=  ('<v ' . $block["voice"] . '>'); 
+            $implodedVtt .= (str_replace("<v >", "", $block["text"]));
             $implodedVtt .= ("\n\n");
         }
         return $implodedVtt;
