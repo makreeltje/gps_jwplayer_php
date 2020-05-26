@@ -15,7 +15,6 @@ class FileInterpretationController extends Controller
         $validateData = $request->validate([
             'VttData' => 'required',
             'targetLanguage' => 'required',
-            'fileName' => 'required',
             'kind' => 'required',
             'sourceLanguage' => 'required',
         ]);
