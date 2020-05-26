@@ -52,11 +52,12 @@ class TranscriptionJob implements ShouldQueue
      */
     public function handle()
     {
-        $this->audioFile = file_get_contents($this->audioFilePath);
+        $localFile =$this->ConvertToMp3($this->audioFilePath);
+        $this->audioFile = file_get_contents($localFile);
         $this->config = (new RecognitionConfig())
             ->setEncoding(AudioEncoding::ENCODING_UNSPECIFIED)
-            ->setSampleRateHertz(44100)
             ->setLanguageCode($this->languageCode)
+            ->setSampleRateHertz(44100)
             ->setEnableWordTimeOffsets(true)
             ->setEnableAutomaticPunctuation(true);
             
@@ -105,6 +106,7 @@ class TranscriptionJob implements ShouldQueue
             $vttString = vttConstructor::constructVtt($this->vttArray);
             
             vttConstructor::uploadVtt($vttString,$this->videoKey,$this->kind,$this->label);
+            unlink($localFile);
             #var_dump($vttString);
         } else {
             print_r($operation->getError());
@@ -112,6 +114,16 @@ class TranscriptionJob implements ShouldQueue
         $client->close();
         //todo add to database
        
+    }
+    private function ConvertToMp3($sourceFilePath){
+        $id =  str_replace(".", "", uniqid( "", true));
+        $path = storage_path( "app/tempfiles/");
+        if(copy($sourceFilePath,$path . $id . ".m4a")){
+            $command ="ffmpeg -i \"" . $path . $id. ".m4a\" -acodec libmp3lame -aq 2 \"".$path . $id. ".mp3\"";
+            exec($command);
+        }
+        unlink($path.$id.".m4a");
+        return $path . $id . ".mp3";
     }
     private function ParseTime($wordInfo){
         $jsonTime = $wordInfo->getStartTime()->serializeToJsonString();
