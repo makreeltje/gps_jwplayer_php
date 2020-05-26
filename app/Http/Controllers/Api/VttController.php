@@ -60,11 +60,13 @@ class VttController extends Controller
         $validateData = $request->validate([
             'VttLink' => 'required',
             'VttData' => 'required',
+            'kind' => 'required',
             'label' => 'required',
+            'language' => 'required',
         ]);
         $explodedLink = explode("/", $validateData['VttLink']);
         $trackKey = str_replace(".tmp", "", str_replace(".vtt", "", $explodedLink[count($explodedLink) - 1]));
-        $completeVttString = vttConstructor::constructVtt($validateData['VttData']);
+        $completeVttString = vttConstructor::constructVtt($validateData['VttData'], $validateData['kind'], $validateData['language']);
         $id =  str_replace(".", "", uniqid("", true));
         $fp = fopen(storage_path("app/tempfiles/" . $id . ".vtt"), "wb");
         fwrite($fp, $completeVttString);
