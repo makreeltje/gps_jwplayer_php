@@ -40,13 +40,14 @@ class FileInterpretationController extends Controller
     {
         $splitVttResultTranslated = array();
 
-        foreach ($splitFile["cues"] as $splitBlockResult) 
+        foreach ($splitFile as $splitBlockResult) 
         {
-            $url = 'https://www.googleapis.com/language/translate/v2?key=' . env("GOOGLE_API_KEY", "") . '&q=' . rawurlencode($splitBlockResult["text"]) . '&source=en&target=' . $targetLanguage;
+            $url = 'https://www.googleapis.com/language/translate/v2?key=' . env("GOOGLE_API_KEY", "") . '&q=' . rawurlencode($splitBlockResult["text"]) . '&source=' . $sourceLanguage . '&target=' . $targetLanguage;
             $handle = curl_init($url);
             curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
             $response = curl_exec($handle);
             $responseDecoded = json_decode($response, true);
+            dd($responseDecoded);
             curl_close($handle);
             $splitBlockResult["text"] = $responseDecoded["data"]["translations"][0]["translatedText"];
             array_push($splitVttResultTranslated, $splitBlockResult);
