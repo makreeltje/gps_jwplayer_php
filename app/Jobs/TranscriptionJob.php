@@ -8,6 +8,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use App\Classes\vttConstructor;
+use Google\Cloud\Storage\StorageClient;
 use Google\ApiCore\ApiException;
 
 require_once __DIR__ . '../../../vendor/autoload.php';
@@ -35,6 +36,7 @@ class TranscriptionJob implements ShouldQueue
     private $videoKey;
     private $kind;
     private $label;
+    private $fileId;
 
     public function __construct($audioFilePath, $languageCode,$videoKey,$kind,$label)
     {
@@ -53,7 +55,17 @@ class TranscriptionJob implements ShouldQueue
      */
     public function handle()
     {
+        var_dump(base_path());
+        $storage = new StorageClient([
+            'credentials' => base_path() .'/JWPlayer-565edd548e20.json']
+        );
+        $storage->registerStreamWrapper();
         $localFile =$this->ConvertToMp3($this->audioFilePath);
+        $bucket = $storage->bucket("auto_caption");
+
+        $bucket->upload(
+            fopen($localFile,'r')
+        );
         $this->audioFile = file_get_contents($localFile);
         $this->config = (new RecognitionConfig())
             ->setEncoding(AudioEncoding::ENCODING_UNSPECIFIED)
@@ -63,11 +75,11 @@ class TranscriptionJob implements ShouldQueue
             ->setEnableAutomaticPunctuation(true);
             
         $client = new SpeechClient([
-            'keyFilePath' => base_path().'/JWPlayer-565edd548e20.json'
+            'credentials' => base_path() .'/JWPlayer-565edd548e20.json'
         ]);
+        $url = 'gs://auto_caption/'. $this->fileId;
         $audio = (new RecognitionAudio())
-            ->setContent($this->audioFile);
-        
+            ->setUri($url);
         $operation = $client->longRunningRecognize($this->config, $audio);
         $operation->pollUntilComplete();
         
@@ -126,6 +138,7 @@ class TranscriptionJob implements ShouldQueue
             exec($command);
         }
         unlink($path.$id.".m4a");
+        $this->fileId = $id . ".mp3";
         return $path . $id . ".mp3";
     }
     private function ParseTime($wordInfo){
