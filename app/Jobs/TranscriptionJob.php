@@ -55,7 +55,7 @@ class TranscriptionJob implements ShouldQueue
      */
     public function handle()
     {
-        var_dump(base_path());
+        
         $storage = new StorageClient([
             'credentials' => base_path() .'/JWPlayer-565edd548e20.json']
         );
@@ -66,7 +66,8 @@ class TranscriptionJob implements ShouldQueue
         $bucket->upload(
             fopen($localFile,'r')
         );
-        $this->audioFile = file_get_contents($localFile);
+        
+        //$this->audioFile = file_get_contents($localFile);
         $this->config = (new RecognitionConfig())
             ->setEncoding(AudioEncoding::ENCODING_UNSPECIFIED)
             ->setLanguageCode($this->languageCode)
