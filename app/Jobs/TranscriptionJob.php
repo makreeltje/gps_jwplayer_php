@@ -129,15 +129,16 @@ class TranscriptionJob implements ShouldQueue
        
     }
     private function ConvertToMp3($sourceFilePath){
+        $extension = ".flac";
         $id =  str_replace(".", "", uniqid( "", true));
         $path = storage_path( "app/tempfiles/");
         if(copy($sourceFilePath,$path . $id . ".m4a")){
-            $command ="ffmpeg -i \"" . $path . $id. ".m4a\" -acodec libmp3lame -q:a 4 \"".$path . $id. ".mp3\"";
+            $command ="ffmpeg -i \"" . $path . $id. ".m4a\" -f flac -ac 1 \"".$path . $id. $extension ."\"";
             exec($command);
         }
         unlink($path.$id.".m4a");
-        $this->fileId = $id . ".mp3";
-        return $path . $id . ".mp3";
+        $this->fileId = $id . $extension;
+        return $path . $id . $extension;
     }
     private function ParseTime($wordInfo){
         $jsonTime = $wordInfo->getStartTime()->serializeToJsonString();
