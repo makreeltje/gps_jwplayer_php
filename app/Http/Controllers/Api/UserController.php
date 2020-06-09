@@ -35,7 +35,7 @@ class UserController extends Controller
                     return response(['message' => 'User not found'], 404);
                 }
             } else {
-                return response(['message' => 'Insufficient rights'], 405);
+                return response(['message' => 'Insufficient rights'], 403);
             }
         }
         return response(['message' => 'Session Expired'], 405);
@@ -56,7 +56,7 @@ class UserController extends Controller
                     return response(['message' => 'Users not found'], 404);
                 }
             } else {
-                return response(['message' => 'Insufficient rights'], 405);
+                return response(['message' => 'Insufficient rights'], 403);
             }
         }
         return response(['message' => 'Session Expired'], 405);
@@ -83,7 +83,7 @@ class UserController extends Controller
                     return response(['message' => 'User not found'], 404);
                 }
             } else {
-                return response(['message' => 'Insufficient rights'], 405);
+                return response(['message' => 'Insufficient rights'], 403);
             }
         }
         return response(['message' => 'Session Expired'], 405);
@@ -110,7 +110,7 @@ class UserController extends Controller
                     return response(['message' => 'User not found'], 404);
                 }
             } else {
-                return response(['message' => 'Insufficient rights'], 405);
+                return response(['message' => 'Insufficient rights'], 403);
             }
         }
         return response(['message' => 'Session Expired'], 405);
