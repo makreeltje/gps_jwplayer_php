@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\User;
+use Podlove\Webvtt\Parser;
+use Jwplayer\JwplatformAPI;
+use Illuminate\Http\Request;
 use App\Classes\vttConstructor;
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
-use Jwplayer\JwplatformAPI;
-use Podlove\Webvtt\Parser;
 
 class VttController extends Controller
 {
