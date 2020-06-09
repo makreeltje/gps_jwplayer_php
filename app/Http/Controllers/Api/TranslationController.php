@@ -43,7 +43,6 @@ class TranslationController extends Controller
             curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
             $response = curl_exec($handle);
             $responseDecoded = json_decode($response, true);
-            dd($responseDecoded);
             curl_close($handle);
             $splitBlockResult["text"] = $responseDecoded["data"]["translations"][0]["translatedText"];
             array_push($splitVttResultTranslated, $splitBlockResult);
