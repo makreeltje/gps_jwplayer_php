@@ -1,51 +1,27 @@
-FROM php:7.2-fpm
+FROM php:7.3-cli
 
-# Copy composer.lock and composer.json
-COPY composer.lock composer.json /var/www/
+LABEL maintainer="Luc Janssen <lphjanss@gmail.com>"
 
-# Set working directory
-WORKDIR /var/www
+# Install package dependencies
+RUN apt update && apt install -y libmagickwand-dev git libzip-dev unzip
 
-# Install dependencies
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    mysql-client \
-    libpng-dev \
-    libjpeg62-turbo-dev \
-    libfreetype6-dev \
-    locales \
-    zip \
-    jpegoptim optipng pngquant gifsicle \
-    vim \
-    unzip \
-    git \
-    nano \
-    curl
+# Enable default PHP extensions
+RUN docker-php-ext-install mysqli pdo_mysql pcntl bcmath zip soap intl gd exif
 
-# Clear cache
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+# Add imagick from pecl
+RUN pecl install imagick && echo 'extension=imagick.so' >> /usr/local/etc/php/php.ini
 
-# Install extensions
-RUN docker-php-ext-install pdo_mysql mbstring zip exif pcntl
-RUN docker-php-ext-configure gd --with-gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ --with-png-dir=/usr/include/
-RUN docker-php-ext-install gd
+# Install nodejs & yarn
+RUN curl -sL https://deb.nodesource.com/setup_12.x | bash - \
+    && DEBIAN_FRONTEND=noninteractive apt-get install nodejs -yqq \
+    && npm i -g npm \
+    && curl -o- -L https://yarnpkg.com/install.sh | bash \
+    && npm cache clean --force
 
 # Install composer
+ENV COMPOSER_HOME=/composer
+ENV PATH=./vendor/bin:/composer/vendor/bin:/root/.yarn/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+ENV COMPOSER_ALLOW_SUPERUSER=1
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Add user for laravel application
-RUN groupadd -g 1000 www
-RUN useradd -u 1000 -ms /bin/bash -g www www
-
-# Copy existing application directory contents
-COPY . /var/www
-
-# Copy existing application directory permissions
-COPY --chown=www:www . /var/www
-
-# Change current user to www
-USER www
-
-# Expose port 9000 and start php-fpm server
-EXPOSE 9000
-CMD ["php-fpm"]
+WORKDIR /var/www
