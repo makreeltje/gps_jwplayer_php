@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Route;
 | TRANSLATION
 |--------------------------------------------------------------------------
 */
-Route::post('/TranslateFile', 'TranslationController@translateVtt')->middleware('auth:api');
+Route::post('/TranslateFile', 'Api\TranslationController@translateVtt')->middleware('auth:api');
 
 /*
 |--------------------------------------------------------------------------
