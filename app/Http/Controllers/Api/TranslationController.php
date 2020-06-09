@@ -2,13 +2,9 @@
 
 namespace App\Http\Controllers;
 
-
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\File;
-use Podlove\Webvtt\Parser;
-use App\Classes\vttConstructor;
 
-class FileInterpretationController extends Controller
+class TranslationController extends Controller
 {
     public function translateVtt(Request $request)
     {
@@ -18,30 +14,20 @@ class FileInterpretationController extends Controller
             'kind' => 'required',
             'sourceLanguage' => 'required',
         ]);
-        $splitFile = $validateData['VttData']; //split the vtt file in associative array //https://github.com/podlove/webvtt-parser
-        $translatedSplitVtt = $this->translateStrings($splitFile, $validateData['targetLanguage'], $validateData['sourceLanguage']); //translate string in api logic
-        return $translatedSplitVtt;
-        //$implodedTranslatedVtt = vttConstructor::constructVtt($translatedSplitVtt, $validateData['kind'],$validateData['targetLanguage']);
-        // $fp = fopen($_SERVER['DOCUMENT_ROOT'] . "/" . $validateData['fileName'] . ".vtt", "wb");
-        // fwrite($fp, $implodedTranslatedVtt);
-        // fclose($fp);
-        //return $implodedTranslatedVtt;
+
+        if (Auth::check()) {
+            $splitFile = $validateData['VttData']; //split the vtt file in associative array //https://github.com/podlove/webvtt-parser
+            $translatedSplitVtt = $this->translateStrings($splitFile, $validateData['targetLanguage'], $validateData['sourceLanguage']); //translate string in api logic
+            return $translatedSplitVtt;
+        }
+        return response(['message' => 'Session Expired'], 405);
     }
 
-    // public function splitFile(String $filePath)
-    // {
-    //     $parser = new Parser();
-    //     $content = File::get(storage_path($filePath));
-    //     $result = $parser->parse($content);
-    //     return $result;
-    // }    
-    
     public function translateStrings($splitFile, $targetLanguage, $sourceLanguage)
     {
         $splitVttResultTranslated = array();
 
-        foreach ($splitFile as $splitBlockResult) 
-        {
+        foreach ($splitFile as $splitBlockResult) {
             $url = 'https://www.googleapis.com/language/translate/v2?key=' . env("GOOGLE_API_KEY", "") . '&q=' . rawurlencode($splitBlockResult["text"]) . '&source=' . $sourceLanguage . '&target=' . $targetLanguage;
             $handle = curl_init($url);
             curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);

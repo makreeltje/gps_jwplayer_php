@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\User;
+use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Http\Request;
-use App\User;
+use Illuminate\Support\Facades\Redirect;
 
 class AuthController extends Controller
 {
@@ -34,7 +35,7 @@ class AuthController extends Controller
         ]);
 
         if (!Auth::attempt($loginData)) {
-            return Redirect::back()->withErrors(['errorMsg', 'Invalid Credentials']);
+            return response(['message' => 'Invalid Credentials'], 401); 
         }
 
         $accessToken = Auth::user()->createToken('authToken')->accessToken;
@@ -55,12 +56,5 @@ class AuthController extends Controller
     public function checkAuthorization(Request $request)
     {
         return Auth::check() ? response(['succes' => true], 200) : response(['succes' => false], 401);
-    }
-
-    public function testAuth(Request $request)
-    {
-        if (Auth::Check($request)) {
-            return 'This Authentication is Valid';
-        }
     }
 }

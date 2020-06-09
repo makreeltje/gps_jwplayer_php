@@ -2,15 +2,12 @@
 
 namespace App\Http\Controllers\Api;
 
-use Illuminate\Http\Request;
+use App\Classes\vttConstructor;
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Jwplayer\JwplatformAPI;
-use App\Classes\vttConstructor;
 use Podlove\Webvtt\Parser;
-use Illuminate\Support\Facades\File;
-
-
 
 class VttController extends Controller
 {
@@ -23,24 +20,28 @@ class VttController extends Controller
             'label' => 'required',
             'language' => 'required',
         ]);
-        $completeVttString = vttConstructor::constructVtt($validateData['VttData'], $validateData['kind'], $validateData['language']);
-        $id =  str_replace(".", "", uniqid("", true));
-        $fp = fopen(storage_path("app/tempfiles/" . $id . ".vtt"), "wb");
-        fwrite($fp, $completeVttString);
-        fclose($fp);
-        $jwplatform_api = new JwplatformAPI(env("JWPLAYER_API_KEY", ""), env("JWPLAYER_API_SECRET", ""));
-        $params = [
-            'video_key' => $validateData['video_key'],
-            'kind' => $validateData['kind'],
-            'label' => $validateData['label'],
-            'language' => $validateData['language']
-        ];
-        $url = "app/tempfiles/" . $id . ".vtt";
-        $decoded = json_decode(trim(json_encode($jwplatform_api->call('/videos/tracks/create', $params))), TRUE);
-        $upload_link = $decoded['link'];
-        $upload_response = $jwplatform_api->upload(storage_path($url), $upload_link);
-        unlink(storage_path($url));
-        return response(['message' => $upload_response["status"]], 200);
+
+        if (Auth::check()) {
+            $completeVttString = vttConstructor::constructVtt($validateData['VttData'], $validateData['kind'], $validateData['language']);
+            $id = str_replace(".", "", uniqid("", true));
+            $fp = fopen(storage_path("app/tempfiles/" . $id . ".vtt"), "wb");
+            fwrite($fp, $completeVttString);
+            fclose($fp);
+            $jwplatform_api = new JwplatformAPI(env("JWPLAYER_API_KEY", ""), env("JWPLAYER_API_SECRET", ""));
+            $params = [
+                'video_key' => $validateData['video_key'],
+                'kind' => $validateData['kind'],
+                'label' => $validateData['label'],
+                'language' => $validateData['language'],
+            ];
+            $url = "app/tempfiles/" . $id . ".vtt";
+            $decoded = json_decode(trim(json_encode($jwplatform_api->call('/videos/tracks/create', $params))), true);
+            $upload_link = $decoded['link'];
+            $upload_response = $jwplatform_api->upload(storage_path($url), $upload_link);
+            unlink(storage_path($url));
+            return response(['message' => $upload_response["status"]], 200);
+        }
+        return response(['message' => 'Session Expired'], 405);
     }
 
     public function GetCaption(Request $request)
@@ -48,12 +49,16 @@ class VttController extends Controller
         $validateData = $request->validate([
             'VttLink' => 'required',
         ]);
-        $content = Http::get($validateData['VttLink']);
-        $parser = new Parser();
-        $content .= "\n";
-        $result = $parser->parse($content);
 
-        return $result != null ? response(['VttData' => $result], 200) : response(['error' => 'Internal server error'], 500);
+        if (Auth::check()) {
+            $content = Http::get($validateData['VttLink']);
+            $parser = new Parser();
+            $content .= "\n";
+            $result = $parser->parse($content);
+
+            return $result != null ? response(['VttData' => $result], 200) : response(['error' => 'Internal server error'], 500);
+        }
+        return response(['message' => 'Session Expired'], 405);
     }
 
     public function SaveCaption(Request $request)
@@ -65,30 +70,33 @@ class VttController extends Controller
             'label' => 'required',
             'language' => 'required',
         ]);
-        $explodedLink = explode("/", $validateData['VttLink']);
-        $trackKey = str_replace(".tmp", "", str_replace(".vtt", "", $explodedLink[count($explodedLink) - 1]));
-        $completeVttString = vttConstructor::constructVtt($validateData['VttData'], $validateData['kind'], $validateData['language']);
-        $id =  str_replace(".", "", uniqid("", true));
-        $fp = fopen(storage_path("app/tempfiles/" . $id . ".vtt"), "wb");
-        fwrite($fp, $completeVttString);
-        fclose($fp);
-        $jwplatform_api = new JwplatformAPI(env("JWPLAYER_API_KEY", ""), env("JWPLAYER_API_SECRET", ""));
-        $params = [
-            'track_key' => $trackKey,
-            'label' => $validateData['label'],
-            'update_file' => 'true',
-            'status' => 'ready'
-        ];
-        $url = "app/tempfiles/" . $id . ".vtt";
-        $decoded = json_decode(trim(json_encode($jwplatform_api->call('/videos/tracks/update', $params))), TRUE);
-        if (!array_key_exists('message', $decoded)) {
-            $upload_link = $decoded['link'];
-            $upload_response = $jwplatform_api->upload(storage_path($url), $upload_link);
-            unlink(storage_path($url));
-            return response(['message' => $upload_response["status"]], 200);
-        }
 
-        return response(['error' => $decoded["message"]], 500);
+        if (Auth::check()) {
+            $explodedLink = explode("/", $validateData['VttLink']);
+            $trackKey = str_replace(".tmp", "", str_replace(".vtt", "", $explodedLink[count($explodedLink) - 1]));
+            $completeVttString = vttConstructor::constructVtt($validateData['VttData'], $validateData['kind'], $validateData['language']);
+            $id = str_replace(".", "", uniqid("", true));
+            $fp = fopen(storage_path("app/tempfiles/" . $id . ".vtt"), "wb");
+            fwrite($fp, $completeVttString);
+            fclose($fp);
+            $jwplatform_api = new JwplatformAPI(env("JWPLAYER_API_KEY", ""), env("JWPLAYER_API_SECRET", ""));
+            $params = [
+                'track_key' => $trackKey,
+                'label' => $validateData['label'],
+                'update_file' => 'true',
+                'status' => 'ready',
+            ];
+            $url = "app/tempfiles/" . $id . ".vtt";
+            $decoded = json_decode(trim(json_encode($jwplatform_api->call('/videos/tracks/update', $params))), true);
+            if (!array_key_exists('message', $decoded)) {
+                $upload_link = $decoded['link'];
+                $upload_response = $jwplatform_api->upload(storage_path($url), $upload_link);
+                unlink(storage_path($url));
+                return response(['message' => $upload_response["status"]], 200);
+            }
+            return response(['error' => $decoded["message"]], 500);
+        }
+        return response(['message' => 'Session Expired'], 405);       
     }
 
     public function DeleteCaption(Request $request)
@@ -96,29 +104,23 @@ class VttController extends Controller
         $validateData = $request->validate([
             'VttLink' => 'required',
         ]);
-        $explodedLink = explode("/", $validateData['VttLink']);
-        $trackKey = str_replace(".tmp", "", str_replace(".vtt", "", $explodedLink[count($explodedLink) - 1]));
-        $jwplatform_api = new JwplatformAPI(env("JWPLAYER_API_KEY", ""), env("JWPLAYER_API_SECRET", ""));
-        $params = [
-            'track_key' => $trackKey,
-        ];
-        $decoded = json_decode(trim(json_encode($jwplatform_api->call('/videos/tracks/delete', $params))), TRUE);
-        
-        if($decoded['status'] == 'ok'){
-            return response(['status' => $decoded['status']], 200);
-        }
-        else if(array_key_exists('message', $decoded)){
-            return response(['message' => $decoded['message']], 500);
-        }
-    }
 
-    // public function test(Request $request)
-    // {
-        
-    //     $parser = new Parser();
-    //     $content = File::get(storage_path('/app/Files/JW.vtt'));
-    //     $result = $parser->parse($content);
-    //     $completeVttString = vttConstructor::constructVtt($result['cues'], 'captions', 'en');
-    //     dd($completeVttString);
-    // }
-}
+        if (Auth::check()) {
+            $explodedLink = explode("/", $validateData['VttLink']);
+            $trackKey = str_replace(".tmp", "", str_replace(".vtt", "", $explodedLink[count($explodedLink) - 1]));
+            $jwplatform_api = new JwplatformAPI(env("JWPLAYER_API_KEY", ""), env("JWPLAYER_API_SECRET", ""));
+            $params = [
+                'track_key' => $trackKey,
+            ];
+            $decoded = json_decode(trim(json_encode($jwplatform_api->call('/videos/tracks/delete', $params))), true);
+
+            if ($decoded['status'] == 'ok') {
+                return response(['status' => $decoded['status']], 200);
+            } 
+            
+            else if (array_key_exists('message', $decoded)) {
+                return response(['message' => $decoded['message']], 500);
+            }
+        }
+        return response(['message' => 'Session Expired'], 405);
+    }
