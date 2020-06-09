@@ -61,7 +61,7 @@ class VttController extends Controller
         ]);
 
         if (Auth::check()) {
-            $roleRequirement = 1; //EDITOR
+            $roleRequirement = 0; //EDITOR
 
             $user = User::find(Auth::id());
             if ($user['role'] >= $roleRequirement) {
