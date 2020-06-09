@@ -40,6 +40,7 @@ class TranscriptionJob implements ShouldQueue
 
     public function __construct($audioFilePath, $languageCode,$videoKey,$kind,$label)
     {
+        putenv("GOOGLE_APPLICATION_CREDENTIALS=" . base_path() . '/JWPlayer-565edd548e20.json');
         $this->audioFilePath = $audioFilePath;
         $this->languageCode = $languageCode;
         $this->videoKey = $videoKey;
@@ -56,9 +57,7 @@ class TranscriptionJob implements ShouldQueue
     public function handle()
     {
         
-        $storage = new StorageClient([
-            'credentials' => base_path() .'/JWPlayer-565edd548e20.json']
-        );
+        $storage = new StorageClient();
         $storage->registerStreamWrapper();
         $localFile =$this->ConvertToMp3($this->audioFilePath);
         $bucket = $storage->bucket("auto_caption");
@@ -75,9 +74,7 @@ class TranscriptionJob implements ShouldQueue
             ->setEnableWordTimeOffsets(true)
             ->setEnableAutomaticPunctuation(true);
             
-        $client = new SpeechClient([
-            'credentials' => base_path() .'/JWPlayer-565edd548e20.json'
-        ]);
+        $client = new SpeechClient();
         $url = 'gs://auto_caption/'. $this->fileId;
         $audio = (new RecognitionAudio())
             ->setUri($url);
@@ -132,15 +129,16 @@ class TranscriptionJob implements ShouldQueue
        
     }
     private function ConvertToMp3($sourceFilePath){
+        $extension = ".flac";
         $id =  str_replace(".", "", uniqid( "", true));
         $path = storage_path( "app/tempfiles/");
         if(copy($sourceFilePath,$path . $id . ".m4a")){
-            $command ="ffmpeg -i \"" . $path . $id. ".m4a\" -acodec libmp3lame -q:a 4 \"".$path . $id. ".mp3\"";
+            $command ="ffmpeg -i \"" . $path . $id. ".m4a\" -f flac -ac 1 \"".$path . $id. $extension ."\"";
             exec($command);
         }
         unlink($path.$id.".m4a");
-        $this->fileId = $id . ".mp3";
-        return $path . $id . ".mp3";
+        $this->fileId = $id . $extension;
+        return $path . $id . $extension;
     }
     private function ParseTime($wordInfo){
         $jsonTime = $wordInfo->getStartTime()->serializeToJsonString();
