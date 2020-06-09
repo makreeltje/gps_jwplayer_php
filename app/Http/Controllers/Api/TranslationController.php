@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Http\Controllers\Controller;
 
 class TranslationController extends Controller
 {
@@ -18,9 +18,16 @@ class TranslationController extends Controller
         ]);
 
         if (Auth::check()) {
-            $splitFile = $validateData['VttData']; //split the vtt file in associative array //https://github.com/podlove/webvtt-parser
-            $translatedSplitVtt = $this->translateStrings($splitFile, $validateData['targetLanguage'], $validateData['sourceLanguage']); //translate string in api logic
-            return $translatedSplitVtt;
+            $roleRequirement = 1; //EDITOR
+
+            $user = User::find(Auth::id());
+            if ($user['role'] >= $roleRequirement) {
+                $splitFile = $validateData['VttData']; //split the vtt file in associative array //https://github.com/podlove/webvtt-parser
+                $translatedSplitVtt = $this->translateStrings($splitFile, $validateData['targetLanguage'], $validateData['sourceLanguage']); //translate string in api logic
+                return $translatedSplitVtt;
+            } else {
+                return response(['message' => 'Insufficient rights'], 403);
+            }
         }
         return response(['message' => 'Session Expired'], 405);
     }
