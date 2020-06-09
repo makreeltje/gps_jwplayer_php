@@ -1,3 +1,5 @@
+FROM php:7.3-cli
+
 LABEL maintainer="Luc Janssen <lphjanss@gmail.com>"
 
 # Install package dependencies

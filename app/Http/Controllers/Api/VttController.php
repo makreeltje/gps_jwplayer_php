@@ -124,3 +124,4 @@ class VttController extends Controller
         }
         return response(['message' => 'Session Expired'], 405);
     }
+}
